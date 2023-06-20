@@ -1,11 +1,14 @@
+// nolint:errcheck
 package iavl
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/libs/db"
+	"github.com/stretchr/testify/require"
+
+	iavlrand "github.com/cosmos/iavl/internal/rand"
 )
 
 // This file implement fuzz testing by generating programs and then running
@@ -30,7 +33,7 @@ func (p *program) Execute(tree *MutableTree) (err error) {
 				}
 				str += prefix + instr.String() + "\n"
 			}
-			err = fmt.Errorf("Program panicked with: %s\n%s", r, str)
+			err = fmt.Errorf("program panicked with: %s\n%s", r, str)
 		}
 	}()
 
@@ -83,9 +86,9 @@ func genRandomProgram(size int) *program {
 	nextVersion := 1
 
 	for p.size() < size {
-		k, v := []byte(cmn.RandStr(1)), []byte(cmn.RandStr(1))
+		k, v := []byte(iavlrand.RandStr(1)), []byte(iavlrand.RandStr(1))
 
-		switch cmn.RandInt() % 7 {
+		switch rand.Int() % 7 {
 		case 0, 1, 2:
 			p.addInstruction(instruction{op: "SET", k: k, v: v})
 		case 3, 4:
@@ -94,7 +97,7 @@ func genRandomProgram(size int) *program {
 			p.addInstruction(instruction{op: "SAVE", version: int64(nextVersion)})
 			nextVersion++
 		case 6:
-			if rv := cmn.RandInt() % nextVersion; rv < nextVersion && rv > 0 {
+			if rv := rand.Int() % nextVersion; rv < nextVersion && rv > 0 {
 				p.addInstruction(instruction{op: "DELETE", version: int64(rv)})
 			}
 		}
@@ -110,11 +113,14 @@ func TestMutableTreeFuzz(t *testing.T) {
 
 	for size := 5; iterations < maxIterations; size++ {
 		for i := 0; i < progsPerIteration/size; i++ {
-			tree := NewMutableTree(db.NewMemDB(), 0)
+			tree, err := getTestTree(0)
+			require.NoError(t, err)
 			program := genRandomProgram(size)
-			err := program.Execute(tree)
+			err = program.Execute(tree)
 			if err != nil {
-				t.Fatalf("Error after %d iterations (size %d): %s\n%s", iterations, size, err.Error(), tree.String())
+				str, err := tree.String()
+				require.Nil(t, err)
+				t.Fatalf("Error after %d iterations (size %d): %s\n%s", iterations, size, err.Error(), str)
 			}
 			iterations++
 		}

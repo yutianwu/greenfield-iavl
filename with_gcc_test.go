@@ -1,3 +1,4 @@
+//go:build gcc
 // +build gcc
 
 // This file exists because some of the DBs e.g CLevelDB
@@ -9,7 +10,7 @@ package iavl
 import (
 	"testing"
 
-	"github.com/tendermint/tendermint/libs/db"
+	db "github.com/cometbft/cometbft-db"
 )
 
 func BenchmarkImmutableAvlTreeCLevelDB(b *testing.B) {
