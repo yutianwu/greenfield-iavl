@@ -178,7 +178,7 @@ func (tree *MutableTree) Import(version int64) (*Importer, error) {
 
 // Iterate iterates over all keys of the tree. The keys and values must not be modified,
 // since they may point to data stored within IAVL. Returns true if stopped by callnack, false otherwise
-func (tree *MutableTree) Iterate(fn func(key []byte, value []byte) bool) (stopped bool, err error) {
+func (tree *MutableTree) Iterate(fn func(key, value []byte) bool) (stopped bool, err error) {
 	if tree.root == nil {
 		return false, nil
 	}
@@ -222,7 +222,7 @@ func (tree *MutableTree) Iterator(start, end []byte, ascending bool) (dbm.Iterat
 	return tree.ImmutableTree.Iterator(start, end, ascending)
 }
 
-func (tree *MutableTree) set(key []byte, value []byte) (orphans []*Node, updated bool, err error) {
+func (tree *MutableTree) set(key, value []byte) (orphans []*Node, updated bool, err error) {
 	if value == nil {
 		return nil, updated, fmt.Errorf("attempt to store nil value at key '%s'", key)
 	}
@@ -240,7 +240,7 @@ func (tree *MutableTree) set(key []byte, value []byte) (orphans []*Node, updated
 	return orphans, updated, err
 }
 
-func (tree *MutableTree) recursiveSet(node *Node, key []byte, value []byte, orphans *[]*Node) (
+func (tree *MutableTree) recursiveSet(node *Node, key, value []byte, orphans *[]*Node) (
 	newSelf *Node, updated bool, err error,
 ) {
 	version := tree.version + 1
@@ -370,7 +370,7 @@ func (tree *MutableTree) remove(key []byte) (value []byte, orphaned []*Node, rem
 // - new leftmost leaf key for tree after successfully removing 'key' if changed.
 // - the removed value
 // - the orphaned nodes.
-func (tree *MutableTree) recursiveRemove(node *Node, key []byte, orphans *[]*Node) (newHash []byte, newSelf *Node, newKey []byte, newValue []byte, err error) {
+func (tree *MutableTree) recursiveRemove(node *Node, key []byte, orphans *[]*Node) (newHash []byte, newSelf *Node, newKey, newValue []byte, err error) {
 	version := tree.version + 1
 
 	if node.isLeaf() {
@@ -1286,4 +1286,30 @@ func (tree *MutableTree) addOrphans(orphans []*Node) error {
 		tree.orphans[ibytes.UnsafeBytesToStr(node.hash)] = node.version
 	}
 	return nil
+}
+
+func CloneMutableTree(t *MutableTree) *MutableTree {
+	if t == nil {
+		return nil
+	}
+
+	t.mtx.Lock()
+	defer t.mtx.Unlock()
+
+	versions := make(map[int64]bool)
+	versions[t.ImmutableTree.version] = true
+
+	clone := &MutableTree{
+		ImmutableTree:            t.ImmutableTree.clone(),
+		lastSaved:                t.ImmutableTree.clone(),
+		orphans:                  map[string]int64{},
+		versions:                 versions,
+		allRootLoaded:            t.allRootLoaded,
+		unsavedFastNodeAdditions: make(map[string]*fastnode.Node),
+		unsavedFastNodeRemovals:  make(map[string]interface{}),
+		ndb:                      t.ndb, // Share the same nodeDB
+		skipFastStorageUpgrade:   t.skipFastStorageUpgrade,
+	}
+
+	return clone
 }
