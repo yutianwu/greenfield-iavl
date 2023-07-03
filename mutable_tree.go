@@ -1020,11 +1020,8 @@ func (tree *MutableTree) deleteVersion(version int64) error {
 	if !tree.VersionExists(version) {
 		return ErrVersionDoesNotExist
 	}
-	if err := tree.ndb.DeleteVersion(version, true); err != nil {
-		return err
-	}
 
-	return nil
+	return tree.ndb.DeleteVersion(version, true)
 }
 
 // SetInitialVersion sets the initial version of the tree, replacing Options.InitialVersion.
