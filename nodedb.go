@@ -486,10 +486,7 @@ func (ndb *nodeDB) DeleteVersionsFrom(version int64) error {
 
 	// Delete the version root entries
 	err = ndb.traverseRange(rootKeyFormat.Key(version), rootKeyFormat.Key(maxVersion), func(k, v []byte) error {
-		if err = ndb.batch.Delete(k); err != nil {
-			return err
-		}
-		return nil
+		return ndb.batch.Delete(k)
 	})
 
 	if err != nil {
@@ -560,10 +557,7 @@ func (ndb *nodeDB) DeleteVersionsRange(fromVersion, toVersion int64) error {
 
 	// Delete the version root entries
 	err = ndb.traverseRange(rootKeyFormat.Key(fromVersion), rootKeyFormat.Key(toVersion), func(k, v []byte) error {
-		if err := ndb.batch.Delete(k); err != nil {
-			return err
-		}
-		return nil
+		return ndb.batch.Delete(k)
 	})
 
 	if err != nil {
@@ -649,10 +643,8 @@ func (ndb *nodeDB) saveOrphan(hash []byte, fromVersion, toVersion int64) error {
 		return fmt.Errorf("orphan expires before it comes alive.  %d > %d", fromVersion, toVersion)
 	}
 	key := ndb.orphanKey(fromVersion, toVersion, hash)
-	if err := ndb.batch.Set(key, hash); err != nil {
-		return err
-	}
-	return nil
+
+	return ndb.batch.Set(key, hash)
 }
 
 // deleteOrphans deletes orphaned nodes from disk, and the associated orphan
@@ -786,10 +778,8 @@ func (ndb *nodeDB) deleteRoot(version int64, checkLatestVersion bool) error {
 	if checkLatestVersion && version == latestVersion {
 		return errors.New("tried to delete latest version")
 	}
-	if err := ndb.batch.Delete(ndb.rootKey(version)); err != nil {
-		return err
-	}
-	return nil
+
+	return ndb.batch.Delete(ndb.rootKey(version))
 }
 
 // Traverse orphans and return error if any, nil otherwise
@@ -828,11 +818,7 @@ func (ndb *nodeDB) traverseRange(start []byte, end []byte, fn func(k, v []byte) 
 		}
 	}
 
-	if err := itr.Error(); err != nil {
-		return err
-	}
-
-	return nil
+	return itr.Error()
 }
 
 // Traverse all keys with a certain prefix. Return error if any, nil otherwise

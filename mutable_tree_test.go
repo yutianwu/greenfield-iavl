@@ -55,7 +55,7 @@ func TestIterateConcurrency(t *testing.T) {
 				require.NoError(t, err)
 			}(i, j)
 		}
-		tree.Iterate(func(key []byte, value []byte) bool { //nolint:errcheck
+		tree.Iterate(func(key, value []byte) bool { //nolint:errcheck
 			return false
 		})
 	}
@@ -83,7 +83,7 @@ func TestIteratorConcurrency(t *testing.T) {
 			}(i, j)
 		}
 		itr, _ := tree.Iterator(nil, nil, true)
-		for ; itr.Valid(); itr.Next() {
+		for ; itr.Valid(); itr.Next() { //nolint:revive
 		}
 	}
 	wg.Wait()
@@ -106,7 +106,7 @@ func TestNewIteratorConcurrency(t *testing.T) {
 				require.NoError(t, err)
 			}(i, j)
 		}
-		for ; it.Valid(); it.Next() {
+		for ; it.Valid(); it.Next() { //nolint:revive
 		}
 		wg.Wait()
 	}
