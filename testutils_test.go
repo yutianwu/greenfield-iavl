@@ -95,7 +95,7 @@ type traverser struct {
 	count int
 }
 
-func (t *traverser) view(key, value []byte) bool {
+func (t *traverser) view(key, _ []byte) bool {
 	if t.first == "" {
 		t.first = string(key)
 	}
