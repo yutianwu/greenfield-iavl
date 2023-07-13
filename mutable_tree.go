@@ -1301,11 +1301,11 @@ func CloneMutableTree(t *MutableTree) *MutableTree {
 		lastSaved:                t.ImmutableTree.clone(),
 		orphans:                  map[string]int64{},
 		versions:                 versions,
-		allRootLoaded:            t.allRootLoaded,
+		allRootLoaded:            false,
 		unsavedFastNodeAdditions: make(map[string]*fastnode.Node),
 		unsavedFastNodeRemovals:  make(map[string]interface{}),
 		ndb:                      t.ndb, // Share the same nodeDB
-		skipFastStorageUpgrade:   t.skipFastStorageUpgrade,
+		skipFastStorageUpgrade:   true,
 	}
 
 	return clone
