@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.1 (July 31, 2023)
+- [#7](https://github.com/bnb-chain/greenfield-iavl/pull/622) Add clone method of `MutableTree`
+- [#10](https://github.com/bnb-chain/greenfield-iavl/pull/622) Fix skipFastStorageUpgrade and allRootLoaded settings in `MutableTree.Clone()`
+
 ## 0.20.0 (March 14, 2023)
 
 - [#622](https://github.com/cosmos/iavl/pull/622) `export/newExporter()` and `ImmutableTree.Export()` returns error for nil arguements
