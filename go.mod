@@ -1,6 +1,6 @@
 module github.com/cosmos/iavl
 
-go 1.18
+go 1.20
 
 require (
 	github.com/cometbft/cometbft-db v0.7.0
