@@ -479,16 +479,14 @@ func (ndb *nodeDB) DeleteVersionsFrom(version int64) error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
 
 	// Delete the version root entries
-	err = ndb.traverseRange(rootKeyFormat.Key(version), rootKeyFormat.Key(maxVersion), func(k, v []byte) error {
+	err = ndb.traverseRange(rootKeyFormat.Key(version), rootKeyFormat.Key(maxVersion), func(k, _ []byte) error {
 		return ndb.batch.Delete(k)
 	})
-
 	if err != nil {
 		return err
 	}
@@ -556,10 +554,9 @@ func (ndb *nodeDB) DeleteVersionsRange(fromVersion, toVersion int64) error {
 	}
 
 	// Delete the version root entries
-	err = ndb.traverseRange(rootKeyFormat.Key(fromVersion), rootKeyFormat.Key(toVersion), func(k, v []byte) error {
+	err = ndb.traverseRange(rootKeyFormat.Key(fromVersion), rootKeyFormat.Key(toVersion), func(k, _ []byte) error {
 		return ndb.batch.Delete(k)
 	})
-
 	if err != nil {
 		return err
 	}
@@ -957,7 +954,7 @@ func (ndb *nodeDB) decrVersionReaders(version int64) {
 func (ndb *nodeDB) leafNodes() ([]*Node, error) {
 	leaves := []*Node{}
 
-	err := ndb.traverseNodes(func(hash []byte, node *Node) error {
+	err := ndb.traverseNodes(func(_ []byte, node *Node) error {
 		if node.isLeaf() {
 			leaves = append(leaves, node)
 		}
@@ -973,7 +970,7 @@ func (ndb *nodeDB) leafNodes() ([]*Node, error) {
 func (ndb *nodeDB) nodes() ([]*Node, error) {
 	nodes := []*Node{}
 
-	err := ndb.traverseNodes(func(hash []byte, node *Node) error {
+	err := ndb.traverseNodes(func(_ []byte, node *Node) error {
 		nodes = append(nodes, node)
 		return nil
 	})
@@ -987,7 +984,7 @@ func (ndb *nodeDB) nodes() ([]*Node, error) {
 func (ndb *nodeDB) orphans() ([][]byte, error) {
 	orphans := [][]byte{}
 
-	err := ndb.traverseOrphans(func(k, v []byte) error {
+	err := ndb.traverseOrphans(func(_, v []byte) error {
 		orphans = append(orphans, v)
 		return nil
 	})
@@ -1005,7 +1002,7 @@ func (ndb *nodeDB) orphans() ([][]byte, error) {
 
 func (ndb *nodeDB) size() int {
 	size := 0
-	err := ndb.traverse(func(k, v []byte) error {
+	err := ndb.traverse(func(_, _ []byte) error {
 		size++
 		return nil
 	})
@@ -1064,7 +1061,6 @@ func (ndb *nodeDB) String() (string, error) {
 		fmt.Fprintf(buf, "%s: %x\n", key, value)
 		return nil
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -1087,7 +1083,6 @@ func (ndb *nodeDB) String() (string, error) {
 		index++
 		return nil
 	})
-
 	if err != nil {
 		return "", err
 	}

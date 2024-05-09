@@ -314,7 +314,7 @@ func testRandomOperations(t *testing.T, randSeed int64) {
 	// data is left behind in the database.
 	prevVersion := tree.Version()
 	keys := [][]byte{}
-	_, err = tree.Iterate(func(key, value []byte) bool {
+	_, err = tree.Iterate(func(key, _ []byte) bool {
 		keys = append(keys, key)
 		return false
 	})
@@ -368,7 +368,7 @@ func assertEmptyDatabase(t *testing.T, tree *MutableTree) {
 // Checks that the tree has the given number of orphan nodes.
 func assertOrphans(t *testing.T, tree *MutableTree, expected int) {
 	count := 0
-	err := tree.ndb.traverseOrphans(func(k, v []byte) error {
+	err := tree.ndb.traverseOrphans(func(_, _ []byte) error {
 		count++
 		return nil
 	})

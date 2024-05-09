@@ -1289,7 +1289,7 @@ func TestOrphans(t *testing.T) {
 		require.NoError(err, "DeleteVersion should not error")
 	}
 
-	err = tree.ndb.traverseOrphans(func(k, v []byte) error {
+	err = tree.ndb.traverseOrphans(func(k, _ []byte) error {
 		var fromVersion, toVersion int64
 		orphanKeyFormat.Scan(k, &toVersion, &fromVersion)
 		require.True(fromVersion == int64(1) || toVersion == int64(99), fmt.Sprintf(`Unexpected orphan key exists: %v with fromVersion = %d and toVersion = %d.\n 
@@ -2033,7 +2033,7 @@ func TestNodeCacheStatisic(t *testing.T) {
 
 	for name, tc := range testcases {
 		tc := tc
-		t.Run(name, func(sub *testing.T) {
+		t.Run(name, func(_ *testing.T) {
 			stat := &Statistics{}
 			opts := &Options{Stat: stat}
 			db, err := db.NewDB("test", db.MemDBBackend, "")

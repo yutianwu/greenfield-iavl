@@ -2,6 +2,7 @@ package iavl
 
 import (
 	"bytes"
+	crand "crypto/rand"
 	"math/rand"
 	"sort"
 	"testing"
@@ -215,7 +216,7 @@ func BuildTree(size int, cacheSize int) (itree *MutableTree, keys [][]byte, err 
 	for i := 0; i < size; i++ {
 		key := make([]byte, 4)
 		// create random 4 byte key
-		rand.Read(key)
+		crand.Read(key) //nolint:errcheck
 		value := "value_for_key:" + string(key)
 		_, err = tree.Set(key, []byte(value))
 		if err != nil {
